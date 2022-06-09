@@ -2,9 +2,15 @@
 import cv2
 from pyzbar.pyzbar import decode
 
+# Sample Barcode
+item = 8901571010554
+
 
 # Make one method to decode the barcode
 def BarcodeReader(image):
+
+    # Variable to store the barcode data
+    global item
 
     # read the image in numpy array using cv2
     img = cv2.imread(image)
@@ -35,13 +41,20 @@ def BarcodeReader(image):
                 print(barcode.data)
                 print(barcode.type)
 
+                # Store the barcode data in the variable
+                item = int(barcode.data)
+
     # Display the image
     cv2.imshow("Image", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
-if __name__ == "__main__":
+def ScanBarcode():
     # Take the image from user
-    image = "input.jpg"
+    image = "input.png"
     BarcodeReader(image)
+
+
+if __name__ == "__main__":
+    ScanBarcode()

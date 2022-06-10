@@ -1,60 +1,37 @@
-# Importing library
 import cv2
 from pyzbar.pyzbar import decode
 
-# Sample Barcode
-item = 8901571010554
+image_path = "Product.png"
 
 
-# Make one method to decode the barcode
-def BarcodeReader(image):
-
-    # Variable to store the barcode data
-    global item
-
-    # read the image in numpy array using cv2
-    img = cv2.imread(image)
-
-    # Decode the barcode image
-    detectedBarcodes = decode(img)
-
-    # If not detected then print the message
-    if not detectedBarcodes:
-        print("Barcode Not Detected or your barcode is blank/corrupted!")
+def barcode_reader(image):
+    img = cv2.imread(str(image))
+    detected_barcodes = decode(img)
+    if not detected_barcodes:
+        return 0
     else:
-
-        # Traverse through all the detected barcodes in image
-        for barcode in detectedBarcodes:
-
-            # Locate the barcode position in image
-            (x, y, w, h) = barcode.rect
-
-            # Put the rectangle in image using
-            # cv2 to highlight the barcode
-            cv2.rectangle(
-                img, (x - 10, y - 10), (x + w + 10, y + h + 10), (255, 0, 0), 2
-            )
-
+        for barcode in detected_barcodes:
             if barcode.data != "":
+                return int(barcode.data)
 
-                # Print the barcode data
-                print(barcode.data)
-                print(barcode.type)
 
-                # Store the barcode data in the variable
-                item = int(barcode.data)
-
-    # Display the image
-    cv2.imshow("Image", img)
-    cv2.waitKey(0)
+def capture():
+    # 0 for native, 1 for DroidCam
+    cam_port = 0
+    cam = cv2.VideoCapture(cam_port, cv2.CAP_DSHOW)
+    while True:
+        result, captured_image = cam.read()
+        cv2.imwrite(image_path, captured_image)
+        cv2.imshow("Capture Barcode", captured_image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+        item = barcode_reader(image_path)
+        if item:
+            break
+    cam.release()
     cv2.destroyAllWindows()
-
-
-def ScanBarcode():
-    # Take the image from user
-    image = "input.png"
-    BarcodeReader(image)
+    return item
 
 
 if __name__ == "__main__":
-    ScanBarcode()
+    capture()

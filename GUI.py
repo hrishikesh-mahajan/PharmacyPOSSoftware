@@ -83,15 +83,41 @@ def scan_item():
             + "\n",
         )
         item_index = item_index + 1
-        total(mrp)
+        sum_all()
+        item_number.tag_add("Right", "1.0", "end")
+        mrp.tag_add("Right", "1.0", "end")
+        quantity.tag_add("Right", "1.0", "end")
+        rate.tag_add("Right", "1.0", "end")
+        total.tag_add("Right", "1.0", "end")
+        disc_amt.tag_add("Right", "1.0", "end")
+        taxable_amt.tag_add("Right", "1.0", "end")
+        c_gst.tag_add("Right", "1.0", "end")
+        s_gst.tag_add("Right", "1.0", "end")
+        total_amt.tag_add("Right", "1.0", "end")
+        sum_total.tag_add("Right", "1.0", "end")
+        sum_disc_amt.tag_add("Right", "1.0", "end")
+        sum_taxable_amt.tag_add("Right", "1.0", "end")
+        sum_c_gst.tag_add("Right", "1.0", "end")
+        sum_s_gst.tag_add("Right", "1.0", "end")
+        sum_total_amt.tag_add("Right", "1.0", "end")
 
 
-def total(data):
+def sum_all():
+    sum(total, sum_total)
+    sum(disc_amt, sum_disc_amt)
+    sum(taxable_amt, sum_taxable_amt)
+    sum(c_gst, sum_c_gst)
+    sum(s_gst, sum_s_gst)
+    sum(total_amt, sum_total_amt)
+
+
+def sum(data, result):
     count = 0.00
-    for counter in range(1.0, item_index):
-        count = count + float(data.get(counter, counter + 1))
-    sum_mrp = "0"
-    return str(count)
+    for counter in range(1, int(item_index)):
+        line = float(counter)
+        count = count + float(data.get(line, line + 1))
+    result.delete("1.0", "end")
+    result.insert(1.0, str(count))
 
 
 def clear():
@@ -106,6 +132,8 @@ def clear():
     c_gst.delete("1.0", "end")
     s_gst.delete("1.0", "end")
     total_amt.delete("1.0", "end")
+    discount_percent.delete("1.0", "end")
+    discount_percent.insert(1.0, "0.00")
 
 
 def exit_function():
@@ -181,56 +209,78 @@ Label(window, text="SGST").grid(row=9, column=9)
 Label(window, text="TOTAL AMT").grid(row=9, column=10)
 
 item_number = Text(window, height=10, width=4)
+item_number.tag_configure("Right", justify="right")
 item_number.grid(row=10, column=0)
 
 item_name = Text(window, height=10, width=25)
 item_name.grid(row=10, column=1)
 
 mrp = Text(window, height=10, width=6)
+mrp.tag_configure("Right", justify="right")
 mrp.grid(row=10, column=2)
 
 quantity = Text(window, height=10, width=3)
+quantity.tag_configure("Right", justify="right")
 quantity.grid(row=10, column=3)
 
 rate = Text(window, height=10, width=6)
+rate.tag_configure("Right", justify="right")
 rate.grid(row=10, column=4)
 
 total = Text(window, height=10, width=6)
+total.tag_configure("Right", justify="right")
 total.grid(row=10, column=5)
 
 disc_amt = Text(window, height=10, width=6)
+disc_amt.tag_configure("Right", justify="right")
 disc_amt.grid(row=10, column=6)
 
 taxable_amt = Text(window, height=10, width=7)
+taxable_amt.tag_configure("Right", justify="right")
 taxable_amt.grid(row=10, column=7)
 
 c_gst = Text(window, height=10, width=6)
+c_gst.tag_configure("Right", justify="right")
 c_gst.grid(row=10, column=8)
 
 s_gst = Text(window, height=10, width=6)
+s_gst.tag_configure("Right", justify="right")
 s_gst.grid(row=10, column=9)
 
 total_amt = Text(window, height=10, width=7)
+total_amt.tag_configure("Right", justify="right")
 total_amt.grid(row=10, column=10)
 
-Label(window, text="TOTAL").grid(row=11, column=1, sticky="e")
+Label(window, text="TOTAL").grid(row=11, column=4, sticky="e")
 
-sum_mrp = Text(window, height=1, width=6)
-sum_mrp.grid(row=11, column=2)
+sum_total = Text(window, height=1, width=6)
+sum_total.tag_configure("Right", justify="right")
+sum_total.grid(row=11, column=5)
 
-Text(window, height=1, width=3).grid(row=11, column=3)
-Text(window, height=1, width=6).grid(row=11, column=4)
-Text(window, height=1, width=6).grid(row=11, column=5)
-Text(window, height=1, width=6).grid(row=11, column=6)
-Text(window, height=1, width=7).grid(row=11, column=7)
-Text(window, height=1, width=6).grid(row=11, column=8)
-Text(window, height=1, width=6).grid(row=11, column=9)
-Text(window, height=1, width=7).grid(row=11, column=10)
+sum_disc_amt = Text(window, height=1, width=6)
+sum_disc_amt.tag_configure("Right", justify="right")
+sum_disc_amt.grid(row=11, column=6)
+
+sum_taxable_amt = Text(window, height=1, width=7)
+sum_taxable_amt.tag_configure("Right", justify="right")
+sum_taxable_amt.grid(row=11, column=7)
+
+sum_c_gst = Text(window, height=1, width=6)
+sum_c_gst.tag_configure("Right", justify="right")
+sum_c_gst.grid(row=11, column=8)
+
+sum_s_gst = Text(window, height=1, width=6)
+sum_s_gst.tag_configure("Right", justify="right")
+sum_s_gst.grid(row=11, column=9)
+
+sum_total_amt = Text(window, height=1, width=7)
+sum_total_amt.tag_configure("Right", justify="right")
+sum_total_amt.grid(row=11, column=10)
 
 
-Label(window, text="Discount %").grid(row=12, column=0)
+Label(window, text="Discount %").grid(row=11, column=0)
 discount_percent = Text(window, height=1, width=6)
-discount_percent.grid(row=12, column=1)
+discount_percent.grid(row=11, column=1)
 discount_percent.insert(1.0, "0.00")
 
 window.mainloop()

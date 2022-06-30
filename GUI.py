@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from tkinter import *
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 # Import modules from reportlab
@@ -11,12 +12,15 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 
 import Barcode
-import Dictionary
 
 now = datetime.now()
 date_time = now.strftime("%Y/%m/%d  %H:%M:%S")
 
 window = Tk()
+
+database_csv = "Database.csv"
+
+Barcode_Dictionary = pd.read_csv(database_csv, index_col=0).T.to_dict(orient="list")
 
 item_index = 1.0
 
@@ -25,13 +29,7 @@ invoice_pdf = "Invoices\\Invoice_" + now.strftime("%Y%m%d_%H%M%S") + ".pdf"
 order_history_csv = "History.csv"
 
 
-def submit():
-    excel()
-    clear()
-    invoice_date.insert(0, date_time)
-
-
-def excel():
+def order_to_csv():
     user = {
         "INVOICE DATE AND TIME": [invoice_date.get()],
         "PATIENT NAME": [patient_name.get()],
@@ -39,45 +37,92 @@ def excel():
         "PATIENT ADDRESS": [patient_address.get()],
         "DOCTOR NAME": [doctor_name.get()],
     }
-    a = pd.DataFrame()
+    order_history_df = pd.DataFrame()
     if not os.path.exists(order_history_csv):
-        a.to_csv(order_history_csv)
-    a = pd.read_csv(order_history_csv, index_col=0)
-    # a.at[a.index[-1], "INVOICE NUMBER"] = invoice_number.get()
-    # a.at[a.index[-1], "INVOICE DATE AND TIME"] = invoice_date.get()
-    # a.at[a.index[-1], "PATIENT NAME"] = patient_name.get()
-    # a.at[a.index[-1], "PATIENT PHONE NUMBER"] = patient_phone_number.get()
-    # a.at[a.index[-1], "PATIENT ADDRESS"] = patient_address.get()
-    # a.at[a.index[-1], "DOCTOR NAME"] = doctor_name.get()
-    b = pd.DataFrame(user)
-    a.index += 1
-    # print(a)
-    # print(a.index[-1])
-    a = pd.concat([a, b], ignore_index=True, axis=0)
-    a.to_csv(order_history_csv)
+        order_history_df.to_csv(order_history_csv)
+    order_history_df = pd.read_csv(order_history_csv, index_col=0)
+    # order_history_df.at[order_history_df.index[-1], "INVOICE NUMBER"] = (
+    #     invoice_number.get()
+    # )
+    # order_history_df.at[order_history_df.index[-1], "INVOICE DATE AND TIME"] = (
+    #     invoice_date.get()
+    # )
+    # order_history_df.at[order_history_df.index[-1], "PATIENT NAME"] = patient_name.get()
+    # order_history_df.at[order_history_df.index[-1], "PATIENT PHONE NUMBER"] = (
+    #     patient_phone_number.get()
+    # )
+    # order_history_df.at[order_history_df.index[-1], "PATIENT ADDRESS"] = (
+    #     patient_address.get()
+    # )
+    # order_history_df.at[order_history_df.index[-1], "DOCTOR NAME"] = doctor_name.get()
+    current_order_df = pd.DataFrame(user)
+    order_history_df.index += 1
+    # print(order_history_df)
+    # print(order_history_df.index[-1])
+    order_history_df = pd.concat(
+        [order_history_df, current_order_df], ignore_index=True, axis=0
+    )
+    order_history_df.to_csv(order_history_csv)
     global item_index
-    for counter in range(0, int(item_index)):
-        line = float(counter) + 1
-        column = str(item_name.get(line, line + 1.0).strip())
-        a[column] = "0"
-        a.at[a.index[-1], str(column + " Quantity")] = quantity.get(
-            line, line + 1.0
-        ).strip()
-        a.at[a.index[-1], str(column + " Price")] = total_amt.get(
-            line, line + 1.0
-        ).strip()
+    for counter in range(1, int(item_index)):
+        line = float(counter)
+        order_history_df.at[
+            order_history_df.index[-1],
+            str(item_name.get(line, line + 1.0).strip() + " Quantity"),
+        ] = quantity.get(line, line + 1.0).strip()
+        order_history_df.at[
+            order_history_df.index[-1],
+            str(item_name.get(line, line + 1.0).strip() + " Price"),
+        ] = total_amt.get(line, line + 1.0).strip()
+    order_history_df.to_csv(order_history_csv)
 
-    a.to_csv(order_history_csv)
 
+def graphs():
+    plt.figure("Analysis")
+    order_history_df = pd.read_csv(order_history_csv, index_col=0)
+    end_col = list(order_history_df.columns).index(order_history_df.columns[-1]) + 1
 
-def reset():
-    invoice_number.delete(0, END)
-    invoice_date.delete(0, END)
-    patient_id.delete(0, END)
-    patient_name.delete(0, END)
-    patient_phone_number.delete(0, END)
-    patient_address.delete(0, END)
-    doctor_name.delete(0, END)
+    plt.subplot(121)  # Quantity
+    labels = []
+    plt_quantity = []
+    for col in range(5, end_col, 2):
+        labels.append(order_history_df.columns[col])
+        index = int((col - 5) / 2)
+        plt_quantity.append(order_history_df[labels[index]].sum())
+        labels[index] = labels[index][:-9]
+    # explode = [0, 0, 0, 0.05, 0]
+    # plt.pie(values, labels=labels, autopct="%.1f%%", explode=explode)
+    plt.pie(plt_quantity, labels=labels, autopct="%.1f%%")
+    plt.title("Quantity")
+    plt.subplot(122)  # Price
+    labels = []
+    plt_price = []
+    for col in range(6, end_col, 2):
+        labels.append(order_history_df.columns[col])
+        index = int((col - 5) / 2)
+        plt_price.append(order_history_df[labels[index]].sum())
+        labels[index] = labels[index][:-6]
+    # explode = [0, 0, 0, 0.05, 0]
+    # plt.pie(values, labels=labels, autopct="%.1f%%", explode=explode)
+    plt.pie(plt_price, labels=labels, autopct="%.1f%%")
+    plt.title("Price")
+    plt.show()
+
+    plt.figure("Analysis")
+    position = range(0, len(labels))
+    plt.bar(position, plt_quantity)
+    plt.xticks(position, labels)
+    plt.tick_params(labelrotation=30)
+    plt.title("Quantity")
+    plt.show()
+
+    plt.figure("Analysis")
+    position = range(0, len(labels))
+    plt.bar(position, plt_price)
+    plt.xticks(position, labels)
+    plt.tick_params(labelrotation=30)
+    plt.title("Price")
+    plt.show()
 
 
 def str_round(string):
@@ -91,9 +136,9 @@ def str_round(string):
 def scan_item():
     global item_index
     code = Barcode.capture()
-    if code in Dictionary.Barcode_Dictionary.keys():
-        name = Dictionary.Barcode_Dictionary[code][0]
-        price = Dictionary.Barcode_Dictionary[code][1]
+    if code in Barcode_Dictionary.keys():
+        name = Barcode_Dictionary[code][0]
+        price = Barcode_Dictionary[code][1]
         for counter in range(0, int(item_index)):
             line = float(counter) + 1
             if name == item_name.get(line, line + 1.0).strip():
@@ -252,9 +297,13 @@ def sum(data, result):
 
 
 def clear():
+    global item_index
+
+    item_index = 1.0
+
     invoice_number.delete(0, END)
     invoice_date.delete(0, END)
-    patient_id.delete(0, END)
+    invoice_date.insert(0, date_time)
     patient_name.delete(0, END)
     patient_phone_number.delete(0, END)
     patient_address.delete(0, END)
@@ -283,8 +332,7 @@ def clear():
 
 def invoice():
     global invoice_pdf
-    # data which we are going to display as tables
-    data = [
+    invoice_item_table = [
         [
             "Sr. No.",
             "Description of goods",
@@ -299,32 +347,24 @@ def invoice():
             "Total Amt\n(inc. Tax)",
         ]
     ]
-    # y = 1.00
-    for counter in range(0, int(item_index)):
-        # global y
-        # counter = int(counter)
-        # print(type(counter), type(y))
-        # print(counter, y)
-        y = float(counter) + 1
-        data.append(
+    for counter in range(1, int(item_index)):
+        line = str(float(counter))
+        invoice_item_table.append(
             [
-                item_number.get(y, y + 0.99),
-                item_name.get(y, y + 0.99),
-                mrp.get(y, y + 0.99),
-                quantity.get(y, y + 0.99),
-                rate.get(y, y + 0.99),
-                total.get(y, y + 0.99),
-                disc_amt.get(y, y + 0.99),
-                taxable_amt.get(y, y + 0.99),
-                c_gst.get(y, y + 0.99),
-                s_gst.get(y, y + 0.99),
-                total_amt.get(y, y + 0.99),
+                item_number.get(line, line + " lineend"),
+                item_name.get(line, line + " lineend"),
+                mrp.get(line, line + " lineend"),
+                quantity.get(line, line + " lineend"),
+                rate.get(line, line + " lineend"),
+                total.get(line, line + " lineend"),
+                disc_amt.get(line, line + " lineend"),
+                taxable_amt.get(line, line + " lineend"),
+                c_gst.get(line, line + " lineend"),
+                s_gst.get(line, line + " lineend"),
+                total_amt.get(line, line + " lineend"),
             ]
         )
-        # counter = int(counter)
-        # counter -= 1
-        # y = y + 1
-    data.append(
+    invoice_item_table.append(
         [
             "",
             "",
@@ -339,52 +379,30 @@ def invoice():
             sum_total_amt.get(1.0, 1.99),
         ]
     )
-    # creating a Base Document Template of page size A4
     pdf = SimpleDocTemplate(invoice_pdf, pagesize=A4)
-
-    # standard stylesheet defined within reportlab itself
     styles = getSampleStyleSheet()
-
-    # fetching the style of Top level heading (Heading1)
     title_style = styles["Heading1"]
-
     # 0: left, 1: center, 2: right
     title_style.alignment = 1
-
-    # creating the paragraph with
-    # the heading text and passing the styles of it
     title = Paragraph("Invoice", title_style)
-
-    # creates a Table Style object and in it,
-    # defines the styles row wise
-    # the tuples which look like coordinates
-    # are nothing but rows and columns
     style = TableStyle(
         [
             ("BOX", (0, 0), (-1, -1), 1, colors.black),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            # ("TEXTCOLOR", (0, 0), (10, 0), colors.whitesmoke),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ]
     )
-
     customer_details = [
         ["Invoice", invoice_number.get()],
         ["Date", date_time],
         ["Patient"],
-        ["ID", patient_id.get()],
         ["Name", patient_name.get()],
         ["Contact", patient_phone_number.get()],
         ["Address", patient_address.get()],
         ["Doctor Name", doctor_name.get()],
     ]
-
-    # creates a table object and passes the style to it
     customer = Table(customer_details, style=style)
-    table = Table(data, style=style)
-
-    # final step which builds the
-    # actual pdf putting together all the elements
+    table = Table(invoice_item_table, style=style)
     # pdf.build(
     #     [
     #         title,
@@ -401,8 +419,8 @@ def invoice():
 
 
 def print_bill():
+    order_to_csv()
     invoice()
-    reset()
     clear()
     os.startfile(invoice_pdf)
 
@@ -410,6 +428,8 @@ def print_bill():
 def exit_function():
     window.destroy()
     """
+    if exit_window:
+        exit_window.destroy()
     exit_window = Tk()
     exit_window.title = "Are you sure?"
     Label(exit_window, text="Confirm Exit?").pack()
@@ -428,7 +448,7 @@ window.title("Medical Billing Software")
 
 Label(window, text="Invoice No.").grid(row=0, column=0, sticky="e")
 Label(window, text="Invoice Date").grid(row=1, column=0, sticky="e")
-Label(window, text="Patient ID").grid(row=2, column=0, sticky="e")
+# Label(window, text="Patient ID").grid(row=2, column=0, sticky="e")
 Label(window, text="Patient Name").grid(row=3, column=0, sticky="e")
 Label(window, text="Patient Contact").grid(row=4, column=0, sticky="e")
 Label(window, text="Patient Address").grid(row=5, column=0, sticky="e")
@@ -437,40 +457,10 @@ Label(window, text="Doctor Name").grid(row=6, column=0, sticky="e")
 invoice_number = Entry(window, width=25)
 invoice_number.grid(row=0, column=1, sticky="w")
 
-"""
-user = {
-    "INVOICE DATE AND TIME": [invoice_date.get()],
-    "PATIENT NAME": [patient_name.get()],
-    "PATIENT PHONE NUMBER": [patient_phone_number.get()],
-    "PATIENT ADDRESS": [patient_address.get()],
-    "DOCTOR NAME": [doctor_name.get()],
-}
-if not os.path.exists(order_history_csv):
-    a = pd.DataFrame(user)
-    a.index += 1
-    a.to_csv(order_history_csv)
-a = pd.read_csv(order_history_csv, index_col=0)
-# a.at[a.index[-1], "INVOICE NUMBER"] = invoice_number.get()
-# a.at[a.index[-1], "INVOICE DATE AND TIME"] = invoice_date.get()
-# a.at[a.index[-1], "PATIENT NAME"] = patient_name.get()
-# a.at[a.index[-1], "PATIENT PHONE NUMBER"] = patient_phone_number.get()
-# a.at[a.index[-1], "PATIENT ADDRESS"] = patient_address.get()
-# a.at[a.index[-1], "DOCTOR NAME"] = doctor_name.get()
-b = pd.DataFrame(user)
-a.index += 1
-# print(a)
-a = pd.concat([a, b], ignore_index=True, axis=0)
-print(a.index[-1])
-a.to_csv(order_history_csv)
-"""
-
 # invoice_date = Label(window, text=date_time)
 invoice_date = Entry(window, width=25)
 invoice_date.grid(row=1, column=1, sticky="w")
 invoice_date.insert(0, date_time)
-
-patient_id = Entry(window, width=25)
-patient_id.grid(row=2, column=1, sticky="w")
 
 patient_name = Entry(window, width=25)
 patient_name.grid(row=3, column=1, sticky="w")
@@ -484,8 +474,10 @@ patient_address.grid(row=5, column=1, sticky="w")
 doctor_name = Entry(window, width=25)
 doctor_name.grid(row=6, column=1, sticky="w")
 
-submit_button = Button(window, text="Submit", command=submit)
-submit_button.grid(row=8, column=0)
+scan_button = Button(
+    window, text="Database", command=lambda: os.startfile(database_csv)
+)
+scan_button.grid(row=8, column=0)
 
 scan_button = Button(window, text="Scan", command=scan_item)
 scan_button.grid(row=8, column=1)
@@ -496,8 +488,16 @@ clear_button.grid(row=8, column=2)
 print_button = Button(window, text="Print", command=print_bill)
 print_button.grid(row=8, column=3)
 
+history_button = Button(
+    window, text="History", command=lambda: os.startfile(order_history_csv)
+)
+history_button.grid(row=8, column=4)
+
+analysis_button = Button(window, text="Analysis", command=graphs)
+analysis_button.grid(row=8, column=5)
+
 exit_button = Button(window, text="Exit", command=exit_function)
-exit_button.grid(row=8, column=4)
+exit_button.grid(row=8, column=6)
 
 Label(window, text="NO").grid(row=9, column=0)
 Label(window, text="NAME").grid(row=9, column=1)

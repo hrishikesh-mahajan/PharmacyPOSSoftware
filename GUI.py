@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from tkinter import END, INSERT, Button, Entry, Label, Text, Tk
+from tkinter import *
 
 import pandas as pd
 
@@ -16,9 +16,7 @@ import Dictionary
 now = datetime.now()
 date_time = now.strftime("%Y/%m/%d  %H:%M:%S")
 
-
 window = Tk()
-
 
 item_index = 1.0
 
@@ -35,38 +33,41 @@ def submit():
 
 def excel():
     user = {
-        "INVOICE NUMBER": [invoice_number.get()],
         "INVOICE DATE AND TIME": [invoice_date.get()],
         "PATIENT NAME": [patient_name.get()],
         "PATIENT PHONE NUMBER": [patient_phone_number.get()],
         "PATIENT ADDRESS": [patient_address.get()],
         "DOCTOR NAME": [doctor_name.get()],
-        " ": " ",
-        "CROCIN": "",
-        "BENADRYL": "",
-        "COFSILS": "",
-        "CHARAK KOFOL": "",
-        "ASPIRIN": "",
-        "CALTRATE VITAMINS": "",
-        "IBUPROFEN": "",
-        "ANTI-DIARRHEAL": "",
-        "MOTIONCALM": "",
-        "ACETAMINOPHEN": "",
     }
     a = pd.DataFrame()
     if not os.path.exists(order_history_csv):
         a.to_csv(order_history_csv)
     a = pd.read_csv(order_history_csv, index_col=0)
+    # a.at[a.index[-1], "INVOICE NUMBER"] = invoice_number.get()
+    # a.at[a.index[-1], "INVOICE DATE AND TIME"] = invoice_date.get()
+    # a.at[a.index[-1], "PATIENT NAME"] = patient_name.get()
+    # a.at[a.index[-1], "PATIENT PHONE NUMBER"] = patient_phone_number.get()
+    # a.at[a.index[-1], "PATIENT ADDRESS"] = patient_address.get()
+    # a.at[a.index[-1], "DOCTOR NAME"] = doctor_name.get()
     b = pd.DataFrame(user)
-    a = pd.concat([a, b], ignore_index=True, axis=0)
-    # print(a)
     a.index += 1
+    # print(a)
+    # print(a.index[-1])
+    a = pd.concat([a, b], ignore_index=True, axis=0)
     a.to_csv(order_history_csv)
-    a = pd.read_csv(order_history_csv, index_col=0)
-    print(a.index[-1])
-    print(a)
-    # print(a.iloc[[1]])
-    # print(a[-1])
+    global item_index
+    for counter in range(0, int(item_index)):
+        line = float(counter) + 1
+        column = str(item_name.get(line, line + 1.0).strip())
+        a[column] = "0"
+        a.at[a.index[-1], str(column + " Quantity")] = quantity.get(
+            line, line + 1.0
+        ).strip()
+        a.at[a.index[-1], str(column + " Price")] = total_amt.get(
+            line, line + 1.0
+        ).strip()
+
+    a.to_csv(order_history_csv)
 
 
 def reset():
@@ -95,15 +96,9 @@ def scan_item():
         price = Dictionary.Barcode_Dictionary[code][1]
         for counter in range(0, int(item_index)):
             line = float(counter) + 1
-            s = item_name.get(line, line + 1.0)
-            s = s.strip()
-            print(".", s.strip(), ".", line)
-            print(".", s, ".", line)
-            if name == s:
+            if name == item_name.get(line, line + 1.0).strip():
                 break
-        s = item_name.get(line, line + 1.0)
-        s = s.strip()
-        if name == s:
+        if name == item_name.get(line, line + 1.0).strip():
             old_item(line)
         else:
             new_item(name, price)
@@ -390,7 +385,18 @@ def invoice():
 
     # final step which builds the
     # actual pdf putting together all the elements
-    # pdf.build([title, customer, "", table, "", "Discount : " + str(discount_percent.get(1.0, END)), "", "Net Payable : " + str(sum_total_amt.get(1.0, END))])
+    # pdf.build(
+    #     [
+    #         title,
+    #         customer,
+    #         "",
+    #         table,
+    #         "",
+    #         "Discount : " + str(discount_percent.get(1.0, END)),
+    #         "",
+    #         "Net Payable : " + str(sum_total_amt.get(1.0, END)),
+    #     ]
+    # )
     pdf.build([title, customer, table])
 
 
@@ -431,6 +437,34 @@ Label(window, text="Doctor Name").grid(row=6, column=0, sticky="e")
 invoice_number = Entry(window, width=25)
 invoice_number.grid(row=0, column=1, sticky="w")
 
+"""
+user = {
+    "INVOICE DATE AND TIME": [invoice_date.get()],
+    "PATIENT NAME": [patient_name.get()],
+    "PATIENT PHONE NUMBER": [patient_phone_number.get()],
+    "PATIENT ADDRESS": [patient_address.get()],
+    "DOCTOR NAME": [doctor_name.get()],
+}
+if not os.path.exists(order_history_csv):
+    a = pd.DataFrame(user)
+    a.index += 1
+    a.to_csv(order_history_csv)
+a = pd.read_csv(order_history_csv, index_col=0)
+# a.at[a.index[-1], "INVOICE NUMBER"] = invoice_number.get()
+# a.at[a.index[-1], "INVOICE DATE AND TIME"] = invoice_date.get()
+# a.at[a.index[-1], "PATIENT NAME"] = patient_name.get()
+# a.at[a.index[-1], "PATIENT PHONE NUMBER"] = patient_phone_number.get()
+# a.at[a.index[-1], "PATIENT ADDRESS"] = patient_address.get()
+# a.at[a.index[-1], "DOCTOR NAME"] = doctor_name.get()
+b = pd.DataFrame(user)
+a.index += 1
+# print(a)
+a = pd.concat([a, b], ignore_index=True, axis=0)
+print(a.index[-1])
+a.to_csv(order_history_csv)
+"""
+
+# invoice_date = Label(window, text=date_time)
 invoice_date = Entry(window, width=25)
 invoice_date.grid(row=1, column=1, sticky="w")
 invoice_date.insert(0, date_time)
@@ -545,7 +579,6 @@ sum_s_gst.grid(row=11, column=9)
 sum_total_amt = Text(window, height=1, width=7)
 sum_total_amt.tag_configure("Right", justify="right")
 sum_total_amt.grid(row=11, column=10)
-
 
 Label(window, text="Discount %").grid(row=11, column=0)
 discount_percent = Text(window, height=1, width=6)

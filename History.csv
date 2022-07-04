@@ -1,0 +1,23 @@
+,INVOICE DATE AND TIME,PATIENT NAME,PATIENT PHONE NUMBER,PATIENT ADDRESS,DOCTOR NAME,Crocin Quantity,Crocin Price,Benadryl Quantity,Benadryl Price,Boiron MotionCalm Quantity,Boiron MotionCalm Price,Excedrin Acetaminophen Quantity,Excedrin Acetaminophen Price,Imodium Anti-Diarrheal Quantity,Imodium Anti-Diarrheal Price,"Motrin IB, Ibuprofen Quantity","Motrin IB, Ibuprofen Price",Caltrate Vitamins Quantity,Caltrate Vitamins Price,Bayer Chewable Aspirin Quantity,Bayer Chewable Aspirin Price
+0,2022/06/13 13:00:00,Patient 0,Number 0,Address 0,Doctor 0,,,,,,,1,150.00,2,400.00,,,,,,
+1,2022/06/14 14:00:00,Patient 1,Number 1,Address 1,Doctor 1,3,30.00,1,20.00,,,,,,,,,,,,
+2,2022/06/15 15:00:00,Patient 2,Number 2,Address 2,Doctor 2,2,20.00,,,,,,,,,1,320.00,,,,
+3,2022/06/16 16:00:00,Patient 3,Number 3,Address 3,Doctor 3,,,,,1,340.00,,,,,,,1,40.00,,
+4,2022/06/17 17:00:00,Patient 4,Number 4,Address 4,Doctor 4,,,,,,,2,300.00,,,,,2,80.00,,
+5,2022/06/18 18:00:00,Patient 5,Number 5,Address 5,Doctor 5,,,3,60.00,,,,,,,1,320.00,,,,
+6,2022/06/19 19:00:00,Patient 6,Number 6,Address 6,Doctor 6,1,10.00,,,,,,,2,400.00,,,4,160.00,,
+7,2022/06/20 20:00:00,Patient 7,Number 7,Address 7,Doctor 7,,,2,40.00,2,680.00,,,,,,,,,7,210.00
+8,2022/06/21 21:00:00,Patient 8,Number 8,Address 8,Doctor 8,3,30.00,,,,,1,150.00,1,200.00,,,,,,
+9,2022/06/22 22:00:00,Patient 9,Number 9,Address 9,Doctor 9,2,20.00,4,80.00,,,,,,,,,,,,
+10,2022/06/23 23:00:00,Patient 10,Number 10,Address 10,Doctor 10,,,,,1,340.00,,,,,,,5,200.00,,
+11,2022/06/24 00:00:00,Patient 11,Number 11,Address 11,Doctor 11,3,30.00,,,,,,,,,,,,,,
+12,2022/06/25 01:00:00,Patient 12,Number 12,Address 12,Doctor 12,9,90.00,,,,,1,150.00,,,,,,,2,60.00
+13,2022/06/26 02:00:00,Patient 13,Number 13,Address 13,Doctor 13,,,5,100.00,,,,,,,1,320.00,,,5,150.00
+14,2022/06/27 03:00:00,Patient 14,Number 14,Address 14,Doctor 14,4,40.00,,,,,,,,,,,4,160.00,,
+15,2022/06/28 04:00:00,Patient 15,Number 15,Address 15,Doctor 15,,,3,60.00,,,,,1,200.00,,,,,,
+17,2022/06/29 05:00:00,Patient 17,Number 17,Address 17,Doctor 17,3,30.00,,,,,,,,,,,,,,
+18,2022/06/30 06:00:00,Patient 18,Number 18,Address 18,Doctor 18,,,,,,,2,300.00,,,,,4,160.00,,
+19,2022/07/01 07:00:00,Patient 19,Number 19,Address 19,Doctor 19,5,50.00,,,,,,,,,,,,,4,120.00
+20,2022/07/02 08:00:00,Patient 20,Number 20,Address 20,Doctor 20,,,,,,,,,,,,,1,40.00,3,90.00
+21,2022/07/03 09:00:00,Patient 21,Number 21,Address 21,Doctor 21,9,90.00,7,140.00,,,1,150.00,,,1,320.00,,,,
+22,2022/07/04 10:00:00,Person 22,Number 22,Address 22,Doctor 22,1,10.00,1,20.00,1,340.00,1,150.00,1,200.00,1,320.00,1,40.00,1,30.00

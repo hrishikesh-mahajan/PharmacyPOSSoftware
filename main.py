@@ -2,8 +2,10 @@ import os
 from datetime import datetime
 from tkinter import *
 
+import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
+from pyzbar.pyzbar import decode
 
 # Import modules from reportlab
 from reportlab.lib import colors
@@ -11,10 +13,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 
-import Barcode
-
-now = datetime.now()
-date_time = now.strftime("%Y/%m/%d  %H:%M:%S")
+date_time_format = "%Y/%m/%d  %H:%M:%S"
 
 window = Tk()
 
@@ -24,41 +23,69 @@ Barcode_Dictionary = pd.read_csv(database_csv, index_col=0).T.to_dict(orient="li
 
 item_index = 1.0
 
-invoice_pdf = "Invoices\\Invoice_" + now.strftime("%Y%m%d_%H%M%S") + ".pdf"
+invoice_pdf = "Invoices\\Invoice_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".pdf"
 
 order_history_csv = "History.csv"
 
+image_path = "Product.png"
+
+image_path = "Product.png"
+
+order_history_df = pd.DataFrame()
+if not os.path.exists(order_history_csv):
+    order_history_df.to_csv(order_history_csv)
+order_history_df = pd.read_csv(order_history_csv, index_col=0)
+
+if not os.path.isdir("Invoices"):
+    os.mkdir("Invoices")
+
+
+def barcode_reader(image):
+    img = cv2.imread(str(image))
+    os.remove(image)
+    detected_barcodes = decode(img)
+    if not detected_barcodes:
+        return 0
+    else:
+        for barcode in detected_barcodes:
+            if barcode.data != "":
+                return int(barcode.data)
+
+
+def capture():
+    # 0 for native, 1 for DroidCam
+    cam_port = 0
+    cam = cv2.VideoCapture(cam_port, cv2.CAP_DSHOW)
+    while True:
+        result, captured_image = cam.read()
+        cv2.imwrite(image_path, captured_image)
+        cv2.imshow("Capture Barcode", captured_image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+        item = barcode_reader(image_path)
+        if item:
+            break
+    cam.release()
+    cv2.destroyAllWindows()
+    return item
+
 
 def order_to_csv():
+    global order_history_df
     user = {
-        "INVOICE DATE AND TIME": [invoice_date.get()],
+        "INVOICE DATE AND TIME": [invoice_date.cget("text")],
         "PATIENT NAME": [patient_name.get()],
         "PATIENT PHONE NUMBER": [patient_phone_number.get()],
         "PATIENT ADDRESS": [patient_address.get()],
         "DOCTOR NAME": [doctor_name.get()],
     }
-    order_history_df = pd.DataFrame()
-    if not os.path.exists(order_history_csv):
-        order_history_df.to_csv(order_history_csv)
-    order_history_df = pd.read_csv(order_history_csv, index_col=0)
-    # order_history_df.at[order_history_df.index[-1], "INVOICE NUMBER"] = (
-    #     invoice_number.get()
-    # )
-    # order_history_df.at[order_history_df.index[-1], "INVOICE DATE AND TIME"] = (
-    #     invoice_date.get()
-    # )
-    # order_history_df.at[order_history_df.index[-1], "PATIENT NAME"] = patient_name.get()
-    # order_history_df.at[order_history_df.index[-1], "PATIENT PHONE NUMBER"] = (
-    #     patient_phone_number.get()
-    # )
-    # order_history_df.at[order_history_df.index[-1], "PATIENT ADDRESS"] = (
-    #     patient_address.get()
-    # )
-    # order_history_df.at[order_history_df.index[-1], "DOCTOR NAME"] = doctor_name.get()
     current_order_df = pd.DataFrame(user)
     order_history_df.index += 1
     # print(order_history_df)
     # print(order_history_df.index[-1])
+    order_history_df = pd.concat(
+        [order_history_df, current_order_df], ignore_index=True, axis=0
+    )
     order_history_df = pd.concat(
         [order_history_df, current_order_df], ignore_index=True, axis=0
     )
@@ -74,12 +101,19 @@ def order_to_csv():
             order_history_df.index[-1],
             str(item_name.get(line, line + 1.0).strip() + " Price"),
         ] = total_amt.get(line, line + 1.0).strip()
+        order_history_df.at[
+            order_history_df.index[-1],
+            str(item_name.get(line, line + 1.0).strip() + " Quantity"),
+        ] = quantity.get(line, line + 1.0).strip()
+        order_history_df.at[
+            order_history_df.index[-1],
+            str(item_name.get(line, line + 1.0).strip() + " Price"),
+        ] = total_amt.get(line, line + 1.0).strip()
     order_history_df.to_csv(order_history_csv)
 
 
 def graphs():
-    plt.figure("Analysis")
-    order_history_df = pd.read_csv(order_history_csv, index_col=0)
+    plt.figure("Analysis", figsize=(14, 5))
     end_col = list(order_history_df.columns).index(order_history_df.columns[-1]) + 1
 
     plt.subplot(121)  # Quantity
@@ -88,40 +122,63 @@ def graphs():
     for col in range(5, end_col, 2):
         labels.append(order_history_df.columns[col])
         index = int((col - 5) / 2)
+        index = int((col - 5) / 2)
         plt_quantity.append(order_history_df[labels[index]].sum())
         labels[index] = labels[index][:-9]
-    # explode = [0, 0, 0, 0.05, 0]
-    # plt.pie(values, labels=labels, autopct="%.1f%%", explode=explode)
     plt.pie(plt_quantity, labels=labels, autopct="%.1f%%")
     plt.title("Quantity")
+    plt.title("Quantity")
+
     plt.subplot(122)  # Price
     labels = []
     plt_price = []
     for col in range(6, end_col, 2):
         labels.append(order_history_df.columns[col])
         index = int((col - 5) / 2)
+        index = int((col - 5) / 2)
         plt_price.append(order_history_df[labels[index]].sum())
         labels[index] = labels[index][:-6]
-    # explode = [0, 0, 0, 0.05, 0]
-    # plt.pie(values, labels=labels, autopct="%.1f%%", explode=explode)
     plt.pie(plt_price, labels=labels, autopct="%.1f%%")
+    plt.title("Price")
     plt.title("Price")
     plt.show()
 
-    plt.figure("Analysis")
+    plt.figure("Analysis", figsize=(10, 6))
     position = range(0, len(labels))
     plt.bar(position, plt_quantity)
     plt.xticks(position, labels)
     plt.tick_params(labelrotation=30)
     plt.title("Quantity")
+    for i in range(len(labels)):
+        plt.text(
+            i,
+            plt_quantity[i] + 0.02 * (round(sum(plt_quantity) / len(plt_quantity), 2)),
+            plt_quantity[i],
+            ha="center",
+        )
+    plt.title("Quantity")
+    plt.ylabel("Quantity")
+    plt.xlabel("Items")
+    plt.tight_layout()
     plt.show()
 
-    plt.figure("Analysis")
+    plt.figure("Analysis", figsize=(10, 6))
     position = range(0, len(labels))
     plt.bar(position, plt_price)
     plt.xticks(position, labels)
     plt.tick_params(labelrotation=30)
     plt.title("Price")
+    for i in range(len(labels)):
+        plt.text(
+            i,
+            plt_price[i] + 0.02 * (round(sum(plt_price) / len(plt_price), 2)),
+            plt_price[i],
+            ha="center",
+        )
+    plt.title("Price")
+    plt.ylabel("Price")
+    plt.xlabel("Items")
+    plt.tight_layout()
     plt.show()
 
 
@@ -129,13 +186,14 @@ def str_round(string):
     round_figure = round(float(string), 2)
     if int(round_figure * 10) == (round_figure * 10):
         return str(round_figure) + "0"
+        return str(round_figure) + "0"
     else:
         return str(round_figure)
 
 
 def scan_item():
     global item_index
-    code = Barcode.capture()
+    code = capture()
     if code in Barcode_Dictionary.keys():
         name = Barcode_Dictionary[code][0]
         price = Barcode_Dictionary[code][1]
@@ -200,6 +258,53 @@ def new_item(name, price):
         )
         + "\n",
     )
+    item_number.insert(INSERT, str(int(item_index)) + ".\n")
+    item_name.insert(INSERT, name + "\n")
+    mrp.insert(INSERT, str_round(price + 0.00) + "\n")
+    quantity.insert(INSERT, "1" + "\n")
+    rate.insert(INSERT, str_round(price / 1.12) + "\n")
+    total.insert(
+        INSERT,
+        str_round(
+            float(rate.get(item_index, "end-1c linestart"))
+            * float(quantity.get(item_index, "end-1c linestart"))
+        )
+        + "\n",
+    )
+    disc_amt.insert(
+        INSERT,
+        str_round(
+            float(total.get(item_index, "end-1c linestart"))
+            * float(discount_percent.get(1.0, END))
+            / 100
+        )
+        + "\n",
+    )
+    taxable_amt.insert(
+        INSERT,
+        str_round(
+            float(total.get(item_index, "end-1c linestart"))
+            - float(disc_amt.get(item_index, "end-1c linestart"))
+        )
+        + "\n",
+    )
+    c_gst.insert(
+        INSERT,
+        str_round(float(taxable_amt.get(item_index, "end-1c linestart")) * 0.06) + "\n",
+    )
+    s_gst.insert(
+        INSERT,
+        str_round(float(taxable_amt.get(item_index, "end-1c linestart")) * 0.06) + "\n",
+    )
+    total_amt.insert(
+        INSERT,
+        str_round(
+            float(mrp.get(item_index, "end-1c linestart"))
+            * float(quantity.get(item_index, "end-1c linestart"))
+            * (1 - float(discount_percent.get(1.0, END)) / 100)
+        )
+        + "\n",
+    )
     item_index = item_index + 1
 
 
@@ -207,7 +312,15 @@ def old_item(line):
     current_quantity = int(quantity.get(line, line + 1.0))
     quantity.delete(line, line + 1.0)
     quantity.insert(line, str(current_quantity + 1) + "\n")
+    quantity.insert(line, str(current_quantity + 1) + "\n")
     total.delete(line, line + 1.0)
+    total.insert(
+        line,
+        str_round(
+            float(rate.get(line, line + 1.0)) * float(quantity.get(line, line + 1.0))
+        )
+        + "\n",
+    )
     total.insert(
         line,
         str_round(
@@ -225,7 +338,23 @@ def old_item(line):
         )
         + "\n",
     )
+    disc_amt.insert(
+        line,
+        str_round(
+            float(total.get(line, line + 1.0))
+            * float(discount_percent.get(1.0, END))
+            / 100
+        )
+        + "\n",
+    )
     taxable_amt.delete(line, line + 1.0)
+    taxable_amt.insert(
+        line,
+        str_round(
+            float(total.get(line, line + 1.0)) - float(disc_amt.get(line, line + 1.0))
+        )
+        + "\n",
+    )
     taxable_amt.insert(
         line,
         str_round(
@@ -237,11 +366,26 @@ def old_item(line):
     c_gst.insert(
         line, str_round(float(taxable_amt.get(line, line + 1.0)) * 0.06) + "\n"
     )
+    c_gst.insert(
+        line, str_round(float(taxable_amt.get(line, line + 1.0)) * 0.06) + "\n"
+    )
     s_gst.delete(line, line + 1.0)
     s_gst.insert(
         line, str_round(float(taxable_amt.get(line, line + 1.0)) * 0.06) + "\n"
     )
+    s_gst.insert(
+        line, str_round(float(taxable_amt.get(line, line + 1.0)) * 0.06) + "\n"
+    )
     total_amt.delete(line, line + 1.0)
+    total_amt.insert(
+        line,
+        str_round(
+            float(mrp.get(line, line + 1.0))
+            * float(quantity.get(line, line + 1.0))
+            * (1 - float(discount_percent.get(1.0, END)) / 100)
+        )
+        + "\n",
+    )
     total_amt.insert(
         line,
         str_round(
@@ -273,21 +417,15 @@ def align_right():
 
 
 def sum_all():
-    sum(total, sum_total)
-    sum(disc_amt, sum_disc_amt)
-    sum(taxable_amt, sum_taxable_amt)
-    sum(c_gst, sum_c_gst)
-    sum(s_gst, sum_s_gst)
-    sum(total_amt, sum_total_amt)
-    sum(total, sum_total)
-    sum(disc_amt, sum_disc_amt)
-    sum(taxable_amt, sum_taxable_amt)
-    sum(c_gst, sum_c_gst)
-    sum(s_gst, sum_s_gst)
-    sum(total_amt, sum_total_amt)
+    sum_column(total, sum_total)
+    sum_column(disc_amt, sum_disc_amt)
+    sum_column(taxable_amt, sum_taxable_amt)
+    sum_column(c_gst, sum_c_gst)
+    sum_column(s_gst, sum_s_gst)
+    sum_column(total_amt, sum_total_amt)
 
 
-def sum(data, result):
+def sum_column(data, result):
     count = 0.00
     for counter in range(1, int(item_index)):
         line = float(counter)
@@ -301,9 +439,6 @@ def clear():
 
     item_index = 1.0
 
-    invoice_number.delete(0, END)
-    invoice_date.delete(0, END)
-    invoice_date.insert(0, date_time)
     patient_name.delete(0, END)
     patient_phone_number.delete(0, END)
     patient_address.delete(0, END)
@@ -393,8 +528,8 @@ def invoice():
         ]
     )
     customer_details = [
-        ["Invoice", invoice_number.get()],
-        ["Date", date_time],
+        ["Invoice", invoice_number.cget("text")],
+        ["Date", invoice_date.cget("text")],
         ["Patient"],
         ["Name", patient_name.get()],
         ["Contact", patient_phone_number.get()],
@@ -403,18 +538,6 @@ def invoice():
     ]
     customer = Table(customer_details, style=style)
     table = Table(invoice_item_table, style=style)
-    # pdf.build(
-    #     [
-    #         title,
-    #         customer,
-    #         "",
-    #         table,
-    #         "",
-    #         "Discount : " + str(discount_percent.get(1.0, END)),
-    #         "",
-    #         "Net Payable : " + str(sum_total_amt.get(1.0, END)),
-    #     ]
-    # )
     pdf.build([title, customer, table])
 
 
@@ -426,13 +549,10 @@ def print_bill():
 
 
 def exit_function():
-    window.destroy()
-    """
-    if exit_window:
-        exit_window.destroy()
     exit_window = Tk()
-    exit_window.title = "Are you sure?"
-    Label(exit_window, text="Confirm Exit?").pack()
+    exit_window.geometry("200x120")
+    exit_window.title("Exit")
+    Label(exit_window, text="\n Are you Sure? \n").pack()
     Button(
         exit_window,
         text="Yes",
@@ -440,27 +560,42 @@ def exit_function():
     ).pack()
     Button(exit_window, text="No", command=exit_window.destroy).pack()
     exit_window.mainloop()
-    """
 
 
-# window.geometry("1000x400")
+def about():
+    about_window = Tk()
+    about_window.geometry("250x180")
+    about_window.title("About Us")
+    Label(
+        about_window,
+        text="Medical Billing Software \n Build 2022-07-04 02:00:00 PM \n \n Developers: \n Hrishikesh Mahajan \n Aman Narnaware \n Vedant Kulkarni \n Vedant Kulkarni \n",
+    ).pack()
+    Button(about_window, text="Okay", command=about_window.destroy).pack()
+    about_window.mainloop()
+
+
+def time():
+    now = datetime.now()
+    date_time = now.strftime(date_time_format)
+    invoice_date.config(text=date_time)
+    invoice_date.after(1000, time)
+
+
 window.title("Medical Billing Software")
 
 Label(window, text="Invoice No.").grid(row=0, column=0, sticky="e")
 Label(window, text="Invoice Date").grid(row=1, column=0, sticky="e")
-# Label(window, text="Patient ID").grid(row=2, column=0, sticky="e")
 Label(window, text="Patient Name").grid(row=3, column=0, sticky="e")
 Label(window, text="Patient Contact").grid(row=4, column=0, sticky="e")
 Label(window, text="Patient Address").grid(row=5, column=0, sticky="e")
 Label(window, text="Doctor Name").grid(row=6, column=0, sticky="e")
 
-invoice_number = Entry(window, width=25)
+invoice_number = Label(window)
+invoice_number.config(text=(order_history_df.index[-1] + 1))
 invoice_number.grid(row=0, column=1, sticky="w")
 
-# invoice_date = Label(window, text=date_time)
-invoice_date = Entry(window, width=25)
+invoice_date = Label(window)
 invoice_date.grid(row=1, column=1, sticky="w")
-invoice_date.insert(0, date_time)
 
 patient_name = Entry(window, width=25)
 patient_name.grid(row=3, column=1, sticky="w")
@@ -496,8 +631,11 @@ history_button.grid(row=8, column=4)
 analysis_button = Button(window, text="Analysis", command=graphs)
 analysis_button.grid(row=8, column=5)
 
-exit_button = Button(window, text="Exit", command=exit_function)
+exit_button = Button(window, text="About", command=about)
 exit_button.grid(row=8, column=6)
+
+exit_button = Button(window, text="Exit", command=exit_function)
+exit_button.grid(row=8, column=7)
 
 Label(window, text="NO").grid(row=9, column=0)
 Label(window, text="NAME").grid(row=9, column=1)
@@ -584,5 +722,7 @@ Label(window, text="Discount %").grid(row=11, column=0)
 discount_percent = Text(window, height=1, width=6)
 discount_percent.grid(row=11, column=1)
 discount_percent.insert(1.0, "0.00")
+
+time()
 
 window.mainloop()

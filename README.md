@@ -2,6 +2,13 @@
 
 Pharmacy POS Billing Application with Barcode Scanning, Tax Invoice and Data Analytics.
 
+## Technologies
+- [Python3](https://www.python.org/)
+- [Tkinter](https://docs.python.org/3/library/tkinter.html)
+- [Pandas](https://pandas.pydata.org/)
+- [OpenCV](https://opencv.org/)
+- [ReportLab](https://www.reportlab.com/)
+
 ## Screenshots
 - Main GUI Window
 
@@ -46,10 +53,3 @@ Pharmacy POS Billing Application with Barcode Scanning, Tax Invoice and Data Ana
 - Exit Prompt
 
 ![Exit Prompt](https://github.com/hrishikesh-mahajan/PharmacyPOSSoftware/assets/140654204/d180c940-59c1-45b9-b321-24dd352c1759)
-
-## Technologies
-- [Python3](https://www.python.org/)
-- [Tkinter](https://docs.python.org/3/library/tkinter.html)
-- [Pandas](https://pandas.pydata.org/)
-- [OpenCV](https://opencv.org/)
-- [ReportLab](https://www.reportlab.com/)

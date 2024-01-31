@@ -53,3 +53,8 @@ Pharmacy POS Billing Application with Barcode Scanning, Tax Invoice and Data Ana
 - Exit Prompt
 
 ![Exit Prompt](https://github.com/hrishikesh-mahajan/PharmacyPOSSoftware/assets/140654204/d180c940-59c1-45b9-b321-24dd352c1759)
+
+## Co-authors
+- [Aman Narnaware](https://github.com/RealBeazt)
+- [Vedant Kulkarni](https://github.com/Vedantk0410)
+- Vedant Amit Kulkarni

@@ -7,6 +7,7 @@ Pharmacy POS Billing Application with Barcode Scanning, Tax Invoice and Data Ana
 - [Tkinter](https://docs.python.org/3/library/tkinter.html)
 - [Pandas](https://pandas.pydata.org/)
 - [OpenCV](https://opencv.org/)
+- [Pyzbar](https://pypi.org/project/pyzbar/)
 - [ReportLab](https://www.reportlab.com/)
 
 ## Screenshots

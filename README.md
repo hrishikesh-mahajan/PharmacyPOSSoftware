@@ -15,12 +15,13 @@ Pharmacy POS Billing Application with Barcode Scanning, Tax Invoice and Data Ana
 ## What I Learned
 
 <div>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/python/python-original-wordmark.svg" title="Python3" alt="Python3" width="50" height="50"/>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/opencv/opencv-original-wordmark.svg" title="OpenCV" alt="OpenCV" width="50" height="50"/>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/pandas/pandas-original-wordmark.svg" title="Pandas" alt="Pandas" width="50" height="50"/>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/pycharm/pycharm-original-wordmark.svg" title="PyCharm CE" alt="PyCharm CE" width="50" height="50"/>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/vscode/vscode-original-wordmark.svg" title="VSCode" alt="VSCode" width="50" height="50"/>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/atom/atom-original-wordmark.svg" title="Atom" alt="Atom" width="50" height="50"/>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/python/python-original.svg" title="Python3" alt="Python3" width="50" height="50"/>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/opencv/opencv-original.svg" title="OpenCV" alt="OpenCV" width="50" height="50"/>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/pandas/pandas-original.svg" title="Pandas" alt="Pandas" width="50" height="50"/>
+  <img src="https://www.tcl.tk/images/tclp.gif" title="Tkinter" alt="Tkinter" width="50" height="50"/>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/pycharm/pycharm-original.svg" title="PyCharm CE" alt="PyCharm CE" width="50" height="50"/>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/vscode/vscode-original.svg" title="VSCode" alt="VSCode" width="50" height="50"/>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/atom/atom-original.svg" title="Atom" alt="Atom" width="50" height="50"/>
 </div>
 
 ## Screenshots
